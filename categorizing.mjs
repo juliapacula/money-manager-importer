@@ -25,6 +25,12 @@ const parseCategoryToChoices = (category) => {
  * @returns {{mainCategory: string, subCategory: string}}
  */
 const parseCategoryIdToCategory = (categoryType, categoryIdentification) => {
+    if (categoryType === 'Transfer-Out') {
+        return {
+            mainCategory: accounts.find((account) => account === categoryIdentification),
+            subCategory: '',
+        };
+    }
     const categoriesToChoose = categories[categoryType.toLowerCase()];
     const [categoryId, subcategoryId] = categoryIdentification.split('.');
     const mainCategory = categoriesToChoose.find((c) => c.id.toString() === categoryId);

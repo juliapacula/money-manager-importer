@@ -25,7 +25,7 @@ const parseMBankCSV = (csvData) => {
         .filter((header) => header !== '');
     const data = lines.slice(1);
 
-    return data.map((line) => {
+    return data.reverse().map((line) => {
         const entry = {};
         headers.forEach((header, index) => {
             if (!line[index]) {
@@ -43,7 +43,7 @@ const parseMBankCSV = (csvData) => {
                     entry.summary = currentLine;
                     break;
                 case '#Kwota':
-                    entry.amount = parseFloat(currentLine.replaceAll(' PLN', '').replaceAll(',', '.'));
+                    entry.amount = parseFloat(currentLine.replaceAll(' PLN', '').replaceAll(/\s/g, '').replaceAll(',', '.'));
                     break;
                 case '#Kategoria':
                     entry.category = currentLine;
@@ -55,8 +55,7 @@ const parseMBankCSV = (csvData) => {
         });
         return entry;
     })
-        .filter((entry) => Object.keys(entry).length > 0)
-        .reverse();
+        .filter((entry) => Object.keys(entry).length > 0);
 };
 
 /**
@@ -110,7 +109,7 @@ const categorizeMBankEntry = async (entry, dataToSuggest) => {
             originalSummary: entry.summary,
             originalCategory: entry.category,
             date: entry.date.replaceAll('-', '.'),
-            amount: entry.amount,
+            amount: operationType === 'Expense' ? -1 * entry.amount : entry.amount,
             summary,
             account,
             operationType,
@@ -125,7 +124,6 @@ const categorizeMBankEntry = async (entry, dataToSuggest) => {
  * @param {MBankEntry[]} csvEntries - The entries from the CSV file
  */
 const categorizeMBankEntries = async (csvEntries) => {
-    const dataToSuggest = initData();
 
     for (const [index, entry] of csvEntries.entries()) {
         describeMBankEntry(entry);
@@ -141,7 +139,7 @@ const categorizeMBankEntries = async (csvEntries) => {
             console.log(chalk.bold('Dodano nowy wpis i zmodyfikowano aktualny:'));
             describeMBankEntry(entry);
         }
-
+        const dataToSuggest = initData();
         const entryToSave = await categorizeMBankEntry(entry, dataToSuggest);
         if (!entryToSave) {
             continue;
