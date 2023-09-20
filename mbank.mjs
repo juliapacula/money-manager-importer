@@ -55,7 +55,8 @@ const parseMBankCSV = (csvData) => {
         });
         return entry;
     })
-        .filter((entry) => Object.keys(entry).length > 0);
+        .filter((entry) => Object.keys(entry).length > 0)
+        .reverse();
 };
 
 /**
