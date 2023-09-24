@@ -1,24 +1,21 @@
 import { readFileSync } from 'fs';
 import { parseCsvRow } from '../utils/csv.mjs';
 
-const mBankHeaders = ['#Data operacji', '#Opis operacji', '#Kwota', '#Kategoria', '#Rachunek'];
+const skycashHeaders = ['data', 'identyfikator transakcji', 'opis operacji', 'wiadomość', 'kwota', 'saldo'];
 
 /**
  * Prepares the CSV data.
  * @param csvData
  * @returns {string[][]} - The cleaned CSV data
  */
-const clearMBankCSV = (csvData) => {
+const clearSkycashCSV = (csvData) => {
     const ROW_SEPARATOR = '\r\n';
-    const COLUMN_SEPARATOR = ';';
-    const data = csvData.substring(csvData.indexOf(mBankHeaders[0]));
-    const NUMBER_OF_COLUMNS = mBankHeaders.length;
-    // TODO: problem z wpisami, które mają średniki w summary
+    const COLUMN_SEPARATOR = ',';
+    const data = csvData;
+    const NUMBER_OF_COLUMNS = skycashHeaders.length;
 
     return data.split(ROW_SEPARATOR)
-        .map((row) => parseCsvRow(row, COLUMN_SEPARATOR)
-            .map((column) => column.replaceAll(COLUMN_SEPARATOR, ''))
-            .splice(0, NUMBER_OF_COLUMNS))
+        .map((row) => parseCsvRow(row, COLUMN_SEPARATOR).splice(0, NUMBER_OF_COLUMNS))
         .filter((row) => row.length === NUMBER_OF_COLUMNS);
 };
 
@@ -27,34 +24,35 @@ const clearMBankCSV = (csvData) => {
  * @param csvFilePath - The path to the CSV file
  * @returns {ParsedEntry[]} - The parsed CSV data ordered from the oldest to the newest
  */
-const parseMBankCSV = (csvFilePath) => {
+const parseSkycashCSV = (csvFilePath) => {
     const csvData = readFileSync(csvFilePath, 'utf8');
-    const lines = clearMBankCSV(csvData);
+    const lines = clearSkycashCSV(csvData);
     const headers = lines[0];
     const data = [...lines].slice(1);
 
-    return data.reverse().map((line, lineIndex) => {
+    return data.map((line, lineIndex) => {
         const entry = {};
+        entry.id = `${lineIndex}`;
+        entry.category = null;
         headers.forEach((header, index) => {
             const currentLine = line[index];
             if (!currentLine || currentLine === '') {
                 return;
             }
-            entry.id = `${lineIndex}`;
             switch (header) {
-                case mBankHeaders[0]:
-                    entry.date = currentLine;
+                case skycashHeaders[0]:
+                    const [day, month, year] = currentLine.substring(0, 10).split('.');
+                    entry.date = `${year}-${month}-${day}`;
                     break;
-                case mBankHeaders[1]:
+                case skycashHeaders[2]:
                     entry.summary = currentLine;
                     break;
-                case mBankHeaders[2]:
-                    entry.amount = parseFloat(currentLine.replaceAll(' PLN', '').replaceAll(',', '.'));
+                case skycashHeaders[4]:
+                    entry.amount = parseFloat(currentLine.replaceAll('"','').replaceAll(',', '.').replace(' zł', ''));
                     break;
-                case mBankHeaders[3]:
-                    entry.category = currentLine;
-                    break;
-                case mBankHeaders[4]:
+                case skycashHeaders[1]:
+                case skycashHeaders[3]:
+                case skycashHeaders[5]:
                 default:
                     break;
             }
@@ -65,5 +63,5 @@ const parseMBankCSV = (csvFilePath) => {
 };
 
 export {
-    parseMBankCSV,
+    parseSkycashCSV,
 };

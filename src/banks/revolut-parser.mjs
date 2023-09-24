@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs';
+import { parseCsvRow } from '../utils/csv.mjs';
 
 const revolutHeaders = ['Type', 'Product', 'Started Date', 'Completed Date', 'Description', 'Amount', 'Fee', 'Currency', 'State', 'Balance'];
 
@@ -10,17 +11,11 @@ const revolutHeaders = ['Type', 'Product', 'Started Date', 'Completed Date', 'De
 const clearRevolutCSV = (csvData) => {
     const ROW_SEPARATOR = '\n';
     const COLUMN_SEPARATOR = ',';
-    const data = csvData.substring(csvData.indexOf('#Data operacji'));
+    const data = csvData;
     const NUMBER_OF_COLUMNS = revolutHeaders.length;
 
     return data.split(ROW_SEPARATOR)
-        .map((row) => {
-            return row.split(COLUMN_SEPARATOR)
-                .splice(0, NUMBER_OF_COLUMNS)
-                .map((column) => {
-                    return column.trim();
-                });
-        })
+        .map((row) => parseCsvRow(row, COLUMN_SEPARATOR))
         .filter((row) => row.length === NUMBER_OF_COLUMNS);
 };
 

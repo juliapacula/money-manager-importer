@@ -2,6 +2,7 @@ import { parseMBankCSV } from './mbank-parser.mjs';
 import { parseRevolutCSV } from './revolut-parser.mjs';
 import path from 'path';
 import { createParsedCSV, isFileParsed, readParsedCSV } from './parsed-file-managing.mjs';
+import { parseSkycashCSV } from './skycash-parser.mjs';
 
 /**
  * @typedef {Object} ParsedEntry
@@ -30,6 +31,8 @@ const parseFile = (csvFilePath, bank) => {
         parsedCsv = parseMBankCSV(csvFilePath);
     } else if (bank === 'Revolut') {
         parsedCsv = parseRevolutCSV(csvFilePath);
+    } else if (bank === 'skycash') {
+        parsedCsv = parseSkycashCSV(csvFilePath);
     } else {
         throw new Error('Nieobsługiwany typ banku.');
     }
