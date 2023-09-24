@@ -1,38 +1,82 @@
 import chalk from 'chalk';
-
-import { categorizeEntry, parseCategoryIdToCategory } from './categorizing.mjs';
-import { initData, suggestData } from './suggestor.mjs';
-import { saveCategorizedEntries, saveParsedEntries } from './file-saving.mjs';
-import { getEntryOperation } from './entry-operations.mjs';
+import { categorizeEntry, parseCategoryIdToCategory } from '../money-manager/categorizing.mjs';
+import { initData, suggestData } from '../money-manager/suggestor.mjs';
+import { saveCategorizedEntries, saveParsedEntries } from '../money-manager/file-saving.mjs';
+import { getEntryOperation } from '../money-manager/entry-operations.mjs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import path from 'path';
 
 /**
  * @typedef {Object} MBankEntry
+ * @property {string} id - ID of the data row
  * @property {string} date - The operation date
  * @property {string} summary - The operation summary
  * @property {string} category - The operation category assigned by mBank
  * @property {float} amount - The operation amount
+ * @property {boolean} saved - Whether the operation is saved in MoneyManager
  */
 
 /**
- * Returns the parsed CSV data.
+ * Prepares the CSV data.
  * @param csvData
+ * @returns {string[][]} - The prepared CSV data
+ */
+const prepareMBankCSV = (csvData) => {
+    const ROW_SEPARATOR = '\r\n';
+    const COLUMN_SEPARATOR = ';';
+    const data = csvData.substring(csvData.indexOf('#Data operacji'));
+    const NUMBER_OF_COLUMNS = 5;
+
+    return data.split(ROW_SEPARATOR)
+        .map((row) => {
+            return row.split(COLUMN_SEPARATOR)
+                .splice(0, NUMBER_OF_COLUMNS)
+                .map((column) => {
+                    return column.trim()
+                        .replace(/"([^"]*);([^"]*)"/, '"$1$2"')
+                        .replaceAll('"', '')
+                        .replaceAll(/\s\s+/g, ' ');
+                });
+        });
+};
+
+const savePreparedMBankCSV = (filePath, data) => {
+    const parsedFile = `${process.cwd()}/parsed-files/${path.basename(filePath, '.csv')}-parsed.csv`;
+    const fileHeaders = ['#ID', ...data[0], '#Zapisano'];
+    const dataToSave = [...data].slice(1).map((row, index) => {
+        return `${index};${row.join(';')};❌`;
+    })
+        .join('\n');
+    writeFileSync(parsedFile, `${fileHeaders.join(';')}\n${dataToSave}`);
+    console.log(`✅ Utworzono plik ${parsedFile}`);
+};
+
+/**
+ * Returns the parsed CSV data.
+ * @param csvFilePath - The path to the CSV file
  * @returns {MBankEntry[]} - The parsed CSV data
  */
-const parseMBankCSV = (csvData) => {
+const parseMBankCSV = (csvFilePath) => {
+    const parsedFile = `${process.cwd()}/parsed-files/${path.basename(csvFilePath, '.csv')}-parsed.csv`;
+    let csvData;
+    if (existsSync(parsedFile)) {
+        csvData = readFileSync(parsedFile, 'utf8');
+    } else {
+        csvData = readFileSync(csvFilePath, 'utf8');
+        csvData = prepareMBankCSV(csvData);
+        savePreparedMBankCSV(csvFilePath, csvData);
+        csvData = readFileSync(parsedFile, 'utf8');
+    }
+
     const lines = csvData.split('\n').map((line) => line.split(';'));
-    const headers = lines[0]
-        .map((header) => header.trim().replaceAll('\r', '').replaceAll('\n', ''))
-        .filter((header) => header !== '');
+    const headers = lines[0];
     const data = lines.slice(1);
 
     return data.reverse().map((line) => {
         const entry = {};
         headers.forEach((header, index) => {
-            if (!line[index]) {
-                return;
-            }
-            const currentLine = line[index].replaceAll('\r', '').replaceAll('\n', '').replaceAll('"', '').replaceAll(/\s\s+/g, ' ');
-            if (currentLine === '') {
+            const currentLine = line[index];
+            if (!currentLine || currentLine === '') {
                 return;
             }
             switch (header) {
@@ -43,10 +87,16 @@ const parseMBankCSV = (csvData) => {
                     entry.summary = currentLine;
                     break;
                 case '#Kwota':
-                    entry.amount = parseFloat(currentLine.replaceAll(' PLN', '').replaceAll(/\s/g, '').replaceAll(',', '.'));
+                    entry.amount = parseFloat(currentLine.replaceAll(' PLN', '').replaceAll(',', '.'));
                     break;
                 case '#Kategoria':
                     entry.category = currentLine;
+                    break;
+                case '#Zapisano':
+                    entry.saved = currentLine === '✅';
+                    break;
+                case '#ID':
+                    entry.id = currentLine;
                     break;
                 case '#Rachunek':
                 default:
@@ -55,7 +105,7 @@ const parseMBankCSV = (csvData) => {
         });
         return entry;
     })
-        .filter((entry) => Object.keys(entry).length > 0);
+        .filter((entry) => Object.keys(entry).length > 0 && entry.saved === false);
 };
 
 /**
@@ -81,7 +131,7 @@ const describeMBankEntry = (entry) => {
     console.log(chalk.bold(`Kategoryzowanie wpisu z dnia: ${entry.date}`));
     console.log(chalk.red.bold(`${entry.amount.toFixed(2)}PLN `) +
         chalk.blue(`${truncatedSummary}${truncatedSummary.length < entry.summary.length ? '...' : ''}`));
-}
+};
 
 /**
  * Returns the categorized entry.
@@ -94,7 +144,7 @@ const categorizeMBankEntry = async (entry, dataToSuggest) => {
     const suggestedSummary = suggestedData.length > 0 ? suggestedData[0].summary : '';
     const suggestedCategory = suggestedData.length > 0 ? suggestedData[0].category : '';
 
-    const categorizedEntry = await categorizeEntry(entry.amount > 0, 'mBank' , suggestedCategory, suggestedSummary);
+    const categorizedEntry = await categorizeEntry(entry.amount > 0, 'mBank', suggestedCategory, suggestedSummary);
     const account = categorizedEntry.account;
     const summary = categorizedEntry.summary;
     const operationType = categorizedEntry.operationType;
@@ -117,14 +167,13 @@ const categorizeMBankEntry = async (entry, dataToSuggest) => {
             category,
         };
     }
-}
+};
 
 /**
  * Returns the categorized entries.
  * @param {MBankEntry[]} csvEntries - The entries from the CSV file
  */
 const categorizeMBankEntries = async (csvEntries) => {
-
     for (const [index, entry] of csvEntries.entries()) {
         describeMBankEntry(entry);
         const entryOperation = await getEntryOperation();
@@ -134,7 +183,7 @@ const categorizeMBankEntries = async (csvEntries) => {
         } else if (entryOperation.action === 'split') {
             const newEntryAmount = parseFloat(entryOperation.newAmount);
             entry.amount -= newEntryAmount;
-            const newEntry = {...entry, amount: newEntryAmount};
+            const newEntry = { ...entry, amount: newEntryAmount };
             csvEntries.splice(index + 1, 0, newEntry);
             console.log(chalk.bold('Dodano nowy wpis i zmodyfikowano aktualny:'));
             describeMBankEntry(entry);

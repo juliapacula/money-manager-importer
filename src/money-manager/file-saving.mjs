@@ -6,7 +6,7 @@ import fs from 'fs';
  * @returns {Promise<void>}
  */
 const saveCategorizedEntries = async (entries) => {
-    const outputFile = `matches.csv`;
+    const outputFile = `${process.cwd()}/parsed-files/matches.csv`;
     const content = [];
 
     if (fs.existsSync(outputFile) === false) {
@@ -27,7 +27,7 @@ const saveCategorizedEntries = async (entries) => {
  */
 const saveParsedEntries = async (entries) => {
     const currentDate = new Date().toISOString().slice(0, 10);
-    const outputFile = `import-${currentDate}.tsv`;
+    const outputFile = `${process.cwd()}/parsed-files/${currentDate}.tsv`;
 
     const finalColumns = [
         'Date',

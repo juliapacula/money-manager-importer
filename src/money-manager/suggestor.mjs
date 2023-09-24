@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 const initData = () => {
-    const csvFilePath = 'matches.csv';
+    const csvFilePath = `${process.cwd()}/parsed-files/matches.csv`;
     if (fs.existsSync(csvFilePath) === false) {
         return null;
     }

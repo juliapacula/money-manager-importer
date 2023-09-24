@@ -10,8 +10,8 @@ import inquirer from 'inquirer';
  * Returns the answers what to do with entry.
  * @returns {Promise<OperationAnswer>}
  */
-const getEntryOperation = async () => {
-    return await inquirer.prompt([
+const getEntryOperation = () => {
+    return inquirer.prompt([
         {
             type: 'list',
             name: 'action',

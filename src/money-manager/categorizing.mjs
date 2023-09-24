@@ -22,10 +22,10 @@ const parseCategoryToChoices = (category) => {
  * Returns the category name from the list of categories.
  * @param categoryType - The operation type from the list of operation types (Income, Expense, Transfer-Out)
  * @param categoryIdentification - The category identification in form of 'mainCategoryId.subCategoryId'
- * @returns {{mainCategory: string, subCategory: string}}
+ * @returns {{mainCategory: string, subCategory: string}|null}
  */
 const parseCategoryIdToCategory = (categoryType, categoryIdentification) => {
-    if (categoryType === 'Transfer-Out') {
+    if (categoryType.toLowerCase() === 'Transfer-Out'.toLowerCase()) {
         return {
             mainCategory: accounts.find((account) => account === categoryIdentification),
             subCategory: '',
@@ -34,6 +34,9 @@ const parseCategoryIdToCategory = (categoryType, categoryIdentification) => {
     const categoriesToChoose = categories[categoryType.toLowerCase()];
     const [categoryId, subcategoryId] = categoryIdentification.split('.');
     const mainCategory = categoriesToChoose.find((c) => c.id.toString() === categoryId);
+    if (!mainCategory) {
+        return null;
+    }
     const subCategory = mainCategory.subcategories.find((c) => c.id.toString() === subcategoryId);
 
     return {
@@ -48,7 +51,7 @@ const parseCategoryIdToCategoryString = (categoryType, categoryIdentification) =
     }
     const suggested = parseCategoryIdToCategory(categoryType, categoryIdentification);
 
-    return `${suggested.mainCategory}${suggested.subCategory ? '/' + suggested.subCategory : ''}`;
+    return suggested ? `${suggested.mainCategory}${suggested.subCategory ? '/' + suggested.subCategory : ''}` : null;
 };
 
 /**
@@ -63,9 +66,9 @@ const parseCategoryIdToCategoryString = (categoryType, categoryIdentification) =
  * Returns the answers from the user about entry.
  * @returns {Promise<Answer>}
  */
-const categorizeEntry = async (isIncome, suggestedBank, suggestedCategory, suggestedSummary) => {
+const categorizeEntry = (isIncome, suggestedBank, suggestedCategory, suggestedSummary) => {
     inquirer.registerPrompt('search-list', inquirerSearchList);
-    return await inquirer.prompt([
+    return inquirer.prompt([
         {
             type: 'list',
             name: 'account',
@@ -95,7 +98,7 @@ const categorizeEntry = async (isIncome, suggestedBank, suggestedCategory, sugge
             message: 'Wybierz typ operacji:',
             when: (answers) => answers.operationType === 'Income',
             choices: categories.income.map((c) => parseCategoryToChoices(c)).flat(),
-            default: parseCategoryIdToCategoryString('expense', suggestedCategory),
+            default: parseCategoryIdToCategoryString('income', suggestedCategory),
         },
         {
             type: 'search-list',
@@ -110,6 +113,7 @@ const categorizeEntry = async (isIncome, suggestedBank, suggestedCategory, sugge
             name: 'category',
             message: 'Wybierz konto, na które dokonano transfer:',
             when: (answers) => answers.operationType === 'Transfer-Out',
+            default: parseCategoryIdToCategoryString('transfer-out', suggestedCategory),
             choices: accounts.map((account) => ({
                 name: account,
                 value: account,
