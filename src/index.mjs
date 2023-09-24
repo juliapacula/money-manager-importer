@@ -25,4 +25,4 @@ if (fs.existsSync(csvFilePath) === false || path.extname(csvFilePath) !== '.csv'
 }
 
 const parsedCsv = parseFile(csvFilePath, argv.bank);
-// processEntries(argv.bank, parsedCsv).then();
+processEntries(argv.bank, parsedCsv).then();

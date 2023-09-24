@@ -20,7 +20,7 @@ const isFileParsed = (originalFilePath) => {
 const createParsedCSV = (filePath, data) => {
     const parsedFilePath = getParsedFilePath(filePath);
     const fileHeaders = ['id', 'date', 'summary', 'amount', 'category'];
-    const dataToSave = [...data].slice(1).map((row) => {
+    const dataToSave = [...data].map((row) => {
         const rowDataInOrder = [row.id, row.date, row.summary, row.amount.toFixed(2), row.category ? row.category : ''];
         return `${rowDataInOrder.join(COLUMN_SEPARATOR)}`;
     })

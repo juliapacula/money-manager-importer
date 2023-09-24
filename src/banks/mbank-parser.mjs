@@ -16,14 +16,30 @@ const clearMBankCSV = (csvData) => {
 
     return data.split(ROW_SEPARATOR)
         .map((row) => {
-            return row.split(COLUMN_SEPARATOR)
-                .splice(0, NUMBER_OF_COLUMNS)
-                .map((column) => {
-                    return column.trim()
-                        .replaceAll('"', '')
-                        .replaceAll(/\s\s+/g, ' ');
-                });
-        });
+            const columns = [];
+            let currentValue = '';
+
+            for (let i = 0; i < row.length; i++) {
+                const currentChar = row[i];
+                if (currentChar === COLUMN_SEPARATOR) {
+                    columns.push(currentValue.trim().replaceAll('"', '').replaceAll(/\s\s+/g, ' '));
+                    currentValue = '';
+                } else if (currentChar === '"') {
+                    i++;
+                    while (row[i] !== '"') {
+                        if (row[i] !== COLUMN_SEPARATOR) {
+                            currentValue += row[i];
+                        }
+                        i++;
+                    }
+                } else {
+                    currentValue += currentChar;
+                }
+            }
+
+            return columns.splice(0, NUMBER_OF_COLUMNS);
+        })
+        .filter((row) => row.length === NUMBER_OF_COLUMNS);
 };
 
 /**
