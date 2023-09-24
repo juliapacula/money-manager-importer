@@ -1,9 +1,9 @@
-import { categorizeMBankEntries, parseMBankCSV } from './banks/mbank.mjs';
 import yargs from 'yargs';
 import fs from 'fs';
 import path from 'path';
+import { parseFile } from './banks/index.mjs';
+import { processEntries } from './money-manager/index.mjs';
 
-// Parsowanie argumentów z użyciem yargs
 const argv = yargs(process.argv.slice(2))
     .option('input', {
         alias: 'i',
@@ -18,16 +18,11 @@ const argv = yargs(process.argv.slice(2))
     .help()
     .argv;
 
+
 const csvFilePath = argv.input;
 if (fs.existsSync(csvFilePath) === false || path.extname(csvFilePath) !== '.csv') {
     throw new Error('Nie znaleziono pliku CSV.');
 }
 
-let parsedCsv;
-
-if (argv.bank === 'mBank') {
-    parsedCsv = parseMBankCSV(csvFilePath);
-    categorizeMBankEntries(parsedCsv).then();
-} else {
-    throw new Error('Nieobsługiwany typ banku.');
-}
+const parsedCsv = parseFile(csvFilePath, argv.bank);
+// processEntries(argv.bank, parsedCsv).then();

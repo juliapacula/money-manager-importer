@@ -1,6 +1,5 @@
 import inquirer from 'inquirer';
 import inquirerSearchList from 'inquirer-search-list';
-
 import { accounts, categories, operationTypes } from './configuration.mjs';
 
 /**

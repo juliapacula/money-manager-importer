@@ -1,12 +1,19 @@
 import fs from 'fs';
 
+const getSuggestionsFilePath = () => {
+    return `${process.cwd()}/parsed-files/matches.csv`;
+}
+
+const ROW_SEPARATOR = '\n';
+const COLUMN_SEPARATOR = ';';
+
 const initData = () => {
-    const csvFilePath = `${process.cwd()}/parsed-files/matches.csv`;
+    const csvFilePath = getSuggestionsFilePath();
     if (fs.existsSync(csvFilePath) === false) {
         return null;
     }
     const csvData = fs.readFileSync(csvFilePath, 'utf8');
-    const lines = csvData.split('\n').map((line) => line.split(','));
+    const lines = [...csvData.split(ROW_SEPARATOR)].slice(1).map((line) => line.split(COLUMN_SEPARATOR));
     return lines.map((line) => {
         return {
             originalSummary: line[0],
@@ -39,7 +46,35 @@ const suggestData = (data, originalSummary, originalCategory) => {
         });
 };
 
+/**
+ * Returns the categorized entries.
+ * @param {MMEntry} entry - The entry parsed from the CSV file
+ * @returns {Promise<void>}
+ */
+const saveSuggestedData = async (entry) => {
+    const outputFile = getSuggestionsFilePath();
+    const columns = ['Oryginalny opis', 'Oryginalna kategoria', 'Nadany opis', 'Nadana kategoria'];
+    const content = [];
+    if (fs.existsSync(outputFile) === false) {
+        content.push(columns.join(COLUMN_SEPARATOR));
+    }
+    const toSave = [
+        entry.originalSummary,
+        entry.originalCategory,
+        entry.summary,
+        entry.categoryId,
+    ]
+    content.push(toSave.join(COLUMN_SEPARATOR));
+
+    const stream = fs.createWriteStream(outputFile, { flags: 'a' });
+    stream.write(`${content.join(ROW_SEPARATOR)}${ROW_SEPARATOR}`);
+    stream.close();
+
+    console.log(`✅ Przypisane kategorie zapisano w pliku ${outputFile}.`);
+};
+
 export {
     initData,
     suggestData,
+    saveSuggestedData
 }
