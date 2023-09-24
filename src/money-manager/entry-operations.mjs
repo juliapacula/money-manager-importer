@@ -20,14 +20,24 @@ const getEntryOperation = () => {
                 { name: 'Kontynuuj', value: 'continue' },
                 { name: 'Pomiń', value: 'skip' },
                 { name: 'Rozdziel', value: 'split' },
+                { name: 'Edytuj wartość', value: 'edit' },
             ],
             default: 'continue',
         },
         {
             type: 'input',
             name: 'newAmount',
-            message: 'Podaj wartość w [PLN] nowego wpisu (np. 21.15):',
+            message: 'Podaj wartość [PLN] nowego wpisu (np. 21.15):',
             when: (answers) => answers.action === 'split',
+            validate: (value) => {
+                return !isNaN(parseFloat(value)) ? true : 'Podaj liczbę oddzieloną kropką.';
+            }
+        },
+        {
+            type: 'input',
+            name: 'editedAmount',
+            message: 'Podaj nową wartość [PLN] (np. 21.15):',
+            when: (answers) => answers.action === 'edit',
             validate: (value) => {
                 return !isNaN(parseFloat(value)) ? true : 'Podaj liczbę oddzieloną kropką.';
             }

@@ -49,7 +49,7 @@ const parseMBankCSV = (csvFilePath) => {
                     entry.summary = currentLine;
                     break;
                 case mBankHeaders[2]:
-                    entry.amount = parseFloat(currentLine.replaceAll(' PLN', '').replaceAll(',', '.'));
+                    entry.amount = parseFloat(currentLine.replaceAll(' PLN', '').replaceAll(' ', '').replaceAll(',', '.'));
                     break;
                 case mBankHeaders[3]:
                     entry.category = currentLine;

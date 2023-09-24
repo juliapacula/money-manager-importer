@@ -38,6 +38,7 @@ const readParsedCSV = (filePath) => {
     const csvData = readFileSync(getParsedFilePath(filePath), 'utf8');
     return [...csvData.split(ROW_SEPARATOR)]
         .slice(1)
+        .filter((line) => !!line)
         .map((line) => line.split(COLUMN_SEPARATOR))
         .map((line) => {
             return {

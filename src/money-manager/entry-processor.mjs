@@ -85,6 +85,10 @@ const processEntries = async (bank, entries) => {
             entries.splice(index + 1, 0, newEntry);
             console.log(chalk.bold('Dodano nowy wpis i zmodyfikowano aktualny:'));
             describeEntry(entry);
+        } else if (entryOperation.action === 'edit') {
+            entry.amount = parseFloat(entryOperation.editedAmount);
+            console.log(chalk.bold('Zmodyfikowano aktualny wpis:'));
+            describeEntry(entry);
         }
         const dataToSuggest = initData();
         const entryToSave = await createMMEntry(entry, bank, dataToSuggest);
