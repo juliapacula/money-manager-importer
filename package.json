@@ -4,12 +4,13 @@
   "description": "",
   "main": "src/index.mjs",
   "type": "module",
+  "private": true,
   "scripts": {
     "run": "node src/index.mjs -b mBank -i XXX",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Julia Pacuła",
   "license": "ISC",
   "dependencies": {
     "chalk": "^5.3.0",

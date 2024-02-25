@@ -18,7 +18,6 @@ const argv = yargs(process.argv.slice(2))
     .help()
     .argv;
 
-
 const csvFilePath = argv.input;
 if (fs.existsSync(csvFilePath) === false || path.extname(csvFilePath) !== '.csv') {
     throw new Error('Nie znaleziono pliku CSV.');
@@ -26,3 +25,8 @@ if (fs.existsSync(csvFilePath) === false || path.extname(csvFilePath) !== '.csv'
 
 const parsedCsv = parseFile(csvFilePath, argv.bank);
 processEntries(argv.bank, parsedCsv).then();
+
+module.exports = {
+    processEntries,
+    parseFile,
+};
