@@ -5,6 +5,7 @@
   "main": "src/index.mjs",
   "type": "module",
   "scripts": {
+    "run": "node src/index.mjs -b mBank -i XXX",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

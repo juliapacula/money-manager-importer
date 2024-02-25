@@ -13,7 +13,6 @@ const clearMBankCSV = (csvData) => {
     const COLUMN_SEPARATOR = ';';
     const data = csvData.substring(csvData.indexOf(mBankHeaders[0]));
     const NUMBER_OF_COLUMNS = mBankHeaders.length;
-    // TODO: problem z wpisami, które mają średniki w summary
 
     return data.split(ROW_SEPARATOR)
         .map((row) => parseCsvRow(row, COLUMN_SEPARATOR)

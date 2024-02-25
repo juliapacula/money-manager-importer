@@ -15,6 +15,9 @@ parsed-files/*.csv
 
 .idea
 
+.DS_Store
+**/.DS_Store
+
 # Runtime data
 pids
 *.pid
