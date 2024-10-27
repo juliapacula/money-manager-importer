@@ -24,9 +24,31 @@ import { getEntryOperation } from './entry-operations.mjs';
 const describeEntry = (entry) => {
     console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
     const truncatedSummary = entry.summary.substring(0, 150);
+    const amount = entry.amount > 0 ? chalk.green.bold(`${entry.amount.toFixed(2)}PLN `) : chalk.red.bold(`${entry.amount.toFixed(2)}PLN `);
     console.log(chalk.bold(`Kategoryzowanie wpisu z dnia: ${entry.date}`));
-    console.log(chalk.red.bold(`${entry.amount.toFixed(2)}PLN `) +
+    console.log(amount +
         chalk.blue(`${truncatedSummary}${truncatedSummary.length < entry.summary.length ? '...' : ''}`));
+};
+
+/**
+ * Describes the entry for list's sake.
+ * @param {ParsedEntry} entry
+ */
+const describeEntryInList = (entry) => {
+    const truncatedSummary = entry.summary.substring(0, 150);
+    const date = chalk.bold(`${entry.date}`);
+    const amount = entry.amount > 0 ? chalk.green.bold(`${entry.amount.toFixed(2)}PLN`) : chalk.red.bold(`${entry.amount.toFixed(2)}PLN`);
+    const description = chalk.blue(`${truncatedSummary}${truncatedSummary.length < entry.summary.length ? '...' : ''}`);
+    console.log(`${date}\t\t${amount}\t\t${description}`);
+};
+
+/**
+ * Describes the parsed entry list.
+ * @param {ParsedEntry[]} entries
+ */
+const describeEntryList = (entries) => {
+    console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+    entries.forEach(describeEntryInList);
 };
 
 /**
@@ -72,6 +94,7 @@ const createMMEntry = async (entry, bank, dataToSuggest) => {
  * @param {ParsedEntry[]} entries - The entries from the CSV file
  */
 const processEntries = async (bank, entries) => {
+    describeEntryList(entries.toReversed());
     for (const [index, entry] of entries.entries()) {
         describeEntry(entry);
         const entryOperation = await getEntryOperation();
@@ -97,6 +120,8 @@ const processEntries = async (bank, entries) => {
         }
         await saveSuggestedData(entryToSave);
         await saveParsedEntry(entryToSave);
+        process.stdout.write('\x1Bc');
+        describeEntryList(entries.slice(index + 1).toReversed());
     }
 };
 

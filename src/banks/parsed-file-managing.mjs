@@ -16,6 +16,7 @@ const isFileParsed = (originalFilePath) => {
  * Creates the parsed CSV file.
  * @param {string} filePath - The path to the original CSV file
  * @param {ParsedEntry[]} data - The data to save
+ * @return {string} filePath - Created file path
  */
 const createParsedCSV = (filePath, data) => {
     const parsedFilePath = getParsedFilePath(filePath);
@@ -27,6 +28,7 @@ const createParsedCSV = (filePath, data) => {
         .join(ROW_SEPARATOR);
     writeFileSync(parsedFilePath, `${fileHeaders.join(COLUMN_SEPARATOR)}${ROW_SEPARATOR}${dataToSave}`);
     console.log(`✅ Utworzono plik ${parsedFilePath}.`);
+    return parsedFilePath;
 };
 
 /**

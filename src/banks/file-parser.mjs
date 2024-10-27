@@ -17,14 +17,14 @@ import { parseSkycashCSV } from './skycash-parser.mjs';
  * Parses the CSV file.
  * @param csvFilePath - The path to the CSV file
  * @param bank - The bank type, available values: 'mBank', 'Revolut'
- * @returns {ParsedEntry[]}
+ * @returns {{ entries: ParsedEntry[], filePath: string }}
  */
 const parseFile = (csvFilePath, bank) => {
     let parsedCsv;
 
     if (isFileParsed(csvFilePath)) {
         console.log(`✅ Wczytano z pliku ${path.basename(csvFilePath, '.csv')}-parsed.csv.`);
-        return readParsedCSV(csvFilePath);
+        return { entries: readParsedCSV(csvFilePath) };
     }
 
     if (bank === 'mBank') {
@@ -37,10 +37,10 @@ const parseFile = (csvFilePath, bank) => {
         throw new Error('Nieobsługiwany typ banku.');
     }
 
-    createParsedCSV(csvFilePath, parsedCsv);
-    console.log(`✅ Utworzono plik ${path.basename(csvFilePath, '.csv')}-parsed.csv`);
+    const createdFilePath = createParsedCSV(csvFilePath, parsedCsv);
+    console.log(`✅ Utworzono plik ${path.basename(createdFilePath, '.csv')}`);
 
-    return parsedCsv;
+    return { entries: parsedCsv, filePath: createdFilePath };
 };
 
 export {
