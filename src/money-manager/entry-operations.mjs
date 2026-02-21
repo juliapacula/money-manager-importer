@@ -18,6 +18,7 @@ const getEntryOperation = () => {
             message: 'Co zrobić z wpisem:',
             choices: [
                 { name: 'Kontynuuj', value: 'continue' },
+                { name: 'Oznacz jako wspólny', value: 'divide' },
                 { name: 'Pomiń', value: 'skip' },
                 { name: 'Rozdziel', value: 'split' },
                 { name: 'Edytuj wartość', value: 'edit' },

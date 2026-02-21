@@ -8,8 +8,10 @@
   "private": true,
   "scripts": {
     "build": "npx -p typescript tsc --project tsconfig.json",
-    "mbank": "node src/cmd.mjs -b mBank -i XXX",
-    "run": "node src/cmd.mjs -b mBank -i XXX",
+    "mbank": "node src/cmd.mjs -b mBank",
+    "bnp": "node src/cmd.mjs -b BNP",
+    "importer": "node src/cmd.mjs",
+    "ex": "node src/cmd.mjs -b mBank -i XXX",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

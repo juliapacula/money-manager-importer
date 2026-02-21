@@ -4,11 +4,12 @@ import path from 'path';
 import { parseFile } from './banks/index.mjs';
 import { processEntries } from './money-manager/index.mjs';
 
+const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
+
 const argv = yargs(process.argv.slice(2))
     .option('input', {
         alias: 'i',
-        description: 'Ścieżka do pliku CSV z banku',
-        demandOption: true,
+        description: 'Ścieżka do pliku CSV z banku'
     })
     .option('bank', {
         alias: 'b',
@@ -18,7 +19,8 @@ const argv = yargs(process.argv.slice(2))
     .help()
     .argv;
 
-const csvFilePath = argv.input;
+const csvFilePath = argv.input ?? `/Users/julka/Downloads/${argv.bank}-${currentDate}.csv`;
+
 if (fs.existsSync(csvFilePath) === false || path.extname(csvFilePath) !== '.csv') {
     throw new Error('Nie znaleziono pliku CSV.');
 }

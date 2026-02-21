@@ -101,6 +101,10 @@ const processEntries = async (bank, entries) => {
         if (entryOperation.action === 'skip') {
             console.log(chalk.bold('Pominięto wpis.'));
             continue;
+        } else if (entryOperation.action === 'divide') {
+            entry.amount /= 2;
+            console.log(chalk.bold('Podzielono sumę:'));
+            describeEntry(entry);
         } else if (entryOperation.action === 'split') {
             const newEntryAmount = parseFloat(entryOperation.newAmount);
             entry.amount -= newEntryAmount;
